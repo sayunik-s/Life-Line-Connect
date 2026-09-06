@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeLine Connect - Hospital Requests</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f4f7fe; color: #2b3674; display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: #ffffff; padding: 24px 20px; border-right: 1px solid #e0e5f2; display: flex; flex-direction: column; }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; color: #d32f2f; }
+        .brand-icon { width: 40px; height: 40px; background: #ffebee; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .brand h2 { font-size: 18px; font-weight: 700; line-height: 1.2; }
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .nav-item { padding: 12px 16px; border-radius: 8px; color: #a3aed1; text-decoration: none; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
+        .nav-item:hover, .nav-item.active { background: #d32f2f; color: white; }
+        .main-content { flex: 1; padding: 32px; overflow-y: auto; height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .header h1 { font-size: 24px; color: #2b3674; font-weight: 700; }
+        .user-profile { display: flex; align-items: center; gap: 16px; }
+        .logout-btn { padding: 8px 16px; background: #ffebee; color: #d32f2f; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; transition: 0.2s; }
+        .logout-btn:hover { background: #ffcdd2; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-bottom: 24px; }
+        .card { background: white; padding: 24px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .card-header h3 { font-size: 16px; color: #2b3674; font-weight: 700; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #4a5568; }
+        input, select { width: 100%; padding: 12px; border: 1.5px solid #e0e5f2; border-radius: 8px; font-size: 14px; outline: none; background: white; transition: 0.2s; }
+        input:focus, select:focus { border-color: #d32f2f; }
+        .btn-submit { width: 100%; padding: 12px; background: linear-gradient(135deg, #d32f2f 0%, #9a1212 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; margin-top: 10px; transition: 0.2s; }
+        .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(211,47,47,0.2); }
+        .btn-dispatch { padding: 6px 12px; background: #e3f2fd; color: #1565c0; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: 0.2s; }
+        .btn-dispatch:hover { background: #bbdefb; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #e0e5f2; font-size: 14px; }
+        th { color: #a3aed1; font-weight: 600; font-size: 12px; text-transform: uppercase; }
+        td { color: #2b3674; font-weight: 500; }
+        .status { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; }
+        .urgency-critical { background: #ffebee; color: #c62828; }
+        .urgency-urgent { background: #fff3e0; color: #e65100; }
+        .urgency-normal { background: #e3f2fd; color: #1565c0; }
+        .status-pending { background: #fff8e1; color: #f57f17; border: 1px solid #f57f17; }
+        .status-dispatched { background: #e8f5e9; color: #2e7d32; border: 1px solid #2e7d32; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>
+            <h2>LifeLine<br>Connect</h2>
+        </div>
+        <div class="nav-menu">
+            <a href="dashboard.html" class="nav-item">Dashboard</a>
+            <a href="donors.html" class="nav-item">Donors & Eligibility</a>
+            <a href="camps.html" class="nav-item">Camps & Staff</a>
+            <a href="hospitals.html" class="nav-item active">Hospital Requests</a>
+            <a href="community.html" class="nav-item">Community Q&A</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div>
+                <h1>Hospital Requests & Distribution</h1>
+                <p style="font-size: 14px; color: #a3aed1; margin-top: 4px;">Live Connected to Database</p>
+            </div>
+            <div class="user-profile">
+                <span style="font-size: 14px; font-weight: 600;">System Admin</span>
+                <a href="login.html" class="logout-btn">Logout</a>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Log New Request</h3>
+                </div>
+                <form id="requestForm" onsubmit="addRequest(event)">
+                    <div class="form-group">
+                        <label>Hospital Name</label>
+                        <input type="text" id="hName" name="hospital" placeholder="E.g. General Hospital Colombo" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Required Blood Group</label>
+                        <select id="hGroup" name="group" required>
+                            <option value="" disabled selected>Select Group</option>
+                            <option value="A+">A+</option><option value="A-">A-</option>
+                            <option value="B+">B+</option><option value="B-">B-</option>
+                            <option value="O+">O+</option><option value="O-">O-</option>
+                            <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Required Units</label>
+                        <input type="number" id="hUnits" name="units" placeholder="Number of Pints" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Urgency Level</label>
+                        <select id="hUrgency" name="urgency" required>
+                            <option value="Normal">Normal (Within 24 Hours)</option>
+                            <option value="Urgent">Urgent (Within 6 Hours)</option>
+                            <option value="Critical">Critical (Immediate/Emergency)</option>
+                        </select>
+                    </div>
+                    <button type="submit" id="submitBtn" class="btn-submit">Submit Request</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Active Requests</h3>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Req ID</th>
+                                <th>Hospital</th>
+                                <th>Blood & Units</th>
+                                <th>Urgency</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requestTableBody">
+                            <tr><td colspan="6" style="text-align: center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadRequests() {
+            fetch('hospitals_api.php?action=fetch')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        renderTable(data.data);
+                    }
+                })
+                .catch(error => console.error("Error loading data:", error));
+        }
+
+        function renderTable(requests) {
+            const tbody = document.getElementById('requestTableBody');
+            tbody.innerHTML = ''; 
+            if (requests.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No requests found.</td></tr>';
+                return;
+            }
+            requests.forEach(req => {
+                let urgencyClass = '';
+                if (req.urgency === 'Critical') urgencyClass = 'urgency-critical';
+                else if (req.urgency === 'Urgent') urgencyClass = 'urgency-urgent';
+                else if (req.urgency === 'Normal') urgencyClass = 'urgency-normal';
+
+                let statusClass = req.status === 'Pending' ? 'status-pending' : 'status-dispatched';
+                let actionBtn = req.status === 'Pending' 
+                    ? `<button class="btn-dispatch" onclick="dispatchBlood(${req.id})">Dispatch</button>` 
+                    : `<span style="color: #2e7d32; font-size: 12px; font-weight: 600;">Done ✅</span>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${req.req_format_id}</strong></td>
+                        <td>${req.hospital_name}</td>
+                        <td><strong style="color: #d32f2f;">${req.blood_group}</strong> (${req.units} Units)</td>
+                        <td><span class="status ${urgencyClass}">${req.urgency}</span></td>
+                        <td><span class="status ${statusClass}">${req.status}</span></td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function addRequest(event) {
+            event.preventDefault(); 
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerText = "Submitting...";
+            submitBtn.disabled = true;
+
+            fetch('hospitals_api.php?action=add', {
+                method: 'POST',
+                body: new FormData(document.getElementById('requestForm'))
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('requestForm').reset();
+                    loadRequests(); 
+                } else alert(data.message);
+            })
+            .finally(() => {
+                submitBtn.innerText = "Submit Request";
+                submitBtn.disabled = false;
+            });
+        }
+
+        function dispatchBlood(reqId) {
+            if(!confirm("Are you sure you want to dispatch this request?")) return;
+            const formData = new FormData();
+            formData.append('id', reqId);
+            fetch('hospitals_api.php?action=dispatch', { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') loadRequests();
+                else alert(data.message);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", loadRequests);
+    </script>
+</body>
+</html>

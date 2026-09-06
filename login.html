@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeLine Connect - Login</title>
+    <!-- Google Fonts for modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .login-card { background: #ffffff; padding: 40px 32px; border-radius: 16px; box-shadow: 0 20px 40px rgba(154, 18, 18, 0.08); width: 100%; max-width: 380px; text-align: center; transition: transform 0.2s ease; }
+        .brand-icon { width: 54px; height: 54px; background: #ffebee; color: #d32f2f; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; }
+        .login-card h2 { color: #b71c1c; font-size: 24px; font-weight: 700; margin-bottom: 6px; }
+        .subtitle { color: #757575; font-size: 13px; margin-bottom: 24px; }
+        .input-group { margin-bottom: 16px; text-align: left; }
+        .login-card input { width: 100%; padding: 12px 16px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 14px; color: #333; outline: none; transition: all 0.2s ease-in-out; }
+        .login-card input:focus { border-color: #d32f2f; box-shadow: 0 0 0 4px rgba(211, 47, 47, 0.1); }
+        .input-error { border-color: #d32f2f !important; background-color: #fff5f5; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s ease-in-out; text-decoration: none; display: inline-block; box-sizing: border-box; }
+        .btn-red { background: linear-gradient(135deg, #d32f2f 0%, #9a1212 100%); color: white; box-shadow: 0 4px 12px rgba(211, 47, 47, 0.25); margin-top: 8px; }
+        .btn-red:hover { background: linear-gradient(135deg, #b71c1c 0%, #7f0000 100%); box-shadow: 0 6px 16px rgba(211, 47, 47, 0.35); transform: translateY(-1px); }
+        .btn-gray { background-color: #f5f5f5; color: #424242; border: 1px solid #e0e0e0; }
+        .btn-gray:hover { background-color: #eee; color: #212121; }
+        .divider { margin: 24px 0 16px 0; border: 0; border-top: 1px solid #eee; }
+        .register-prompt { font-size: 13px; color: #616161; margin-bottom: 12px; }
+        
+        .alert-error { color: #c62828; background-color: #ffebee; border-left: 4px solid #c62828; padding: 10px 12px; border-radius: 4px; margin-bottom: 16px; font-size: 13px; text-align: left; display: none; }
+        .alert-success { color: #2e7d32; background-color: #e8f5e9; border-left: 4px solid #2e7d32; padding: 10px 12px; border-radius: 4px; margin-bottom: 16px; font-size: 13px; text-align: left; display: none; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+            </svg>
+        </div>
+
+        <h2>LifeLine Connect</h2>
+        <p class="subtitle">Central Blood Bank Portal</p>
+
+        <!-- PHP Errors (If using a backend) -->
+        <?php if (!empty($error)): ?>
+            <div class="alert-error" style="display: block;"><?php echo $error; ?></div>
+        <?php endif; ?>
+
+        <?php if (!empty($success)): ?>
+            <div class="alert-success" style="display: block;"><?php echo $success; ?></div>
+        <?php endif; ?>
+
+        <!-- Notification Boxes -->
+        <div id="jsErrorBox" class="alert-error"></div>
+        <div id="jsSuccessBox" class="alert-success"></div>
+
+        <form id="loginForm" onsubmit="return validateLogin(event)">
+            <div class="input-group">
+                <input type="text" id="username" name="username" placeholder="Username" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" name="password" placeholder="Password">
+            </div>
+            
+            <button type="submit" id="loginBtn" class="btn btn-red">Login</button>
+        </form>
+
+        <hr class="divider">
+        <p class="register-prompt">Don't have an account?</p>
+        <a href="registration1.html" class="btn btn-gray">Register / Sign Up</a>
+    </div>
+
+    <!-- JavaScript AJAX / Fetch Logic -->
+    <script>
+        function validateLogin(event) {
+            event.preventDefault(); // Prevent default page reload
+
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const errorBox = document.getElementById('jsErrorBox');
+            const successBox = document.getElementById('jsSuccessBox');
+            const loginBtn = document.getElementById('loginBtn');
+
+            // Reset errors
+            usernameInput.classList.remove('input-error');
+            passwordInput.classList.remove('input-error');
+            errorBox.style.display = 'none';
+            successBox.style.display = 'none';
+            errorBox.innerHTML = '';
+
+            let isValid = true;
+            let errorMessages = [];
+
+            // JS Validations
+            if (usernameInput.value.trim() === "") {
+                errorMessages.push("Username is required.");
+                usernameInput.classList.add('input-error');
+                isValid = false;
+            }
+
+            if (passwordInput.value.trim() === "") {
+                errorMessages.push("Password is required.");
+                passwordInput.classList.add('input-error');
+                isValid = false;
+            } else if (passwordInput.value.trim().length < 4) {
+                errorMessages.push("Password must be at least 4 characters long.");
+                passwordInput.classList.add('input-error');
+                isValid = false;
+            }
+
+            // Stop if JS validation fails
+            if (!isValid) {
+                errorBox.innerHTML = errorMessages.join('<br>');
+                errorBox.style.display = 'block';
+                return false;
+            }
+
+            // If JS validation passes, Send data to PHP backend
+            loginBtn.innerHTML = "Authenticating...";
+            loginBtn.disabled = true;
+
+            const formData = new FormData(document.getElementById('loginForm'));
+
+            fetch('login.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loginBtn.innerHTML = "Login";
+                loginBtn.disabled = false;
+
+                if (data.status === 'success') {
+                    // Login Successful
+                    successBox.innerHTML = data.message;
+                    successBox.style.display = 'block';
+                    
+                    // Redirect to specific dashboard based on backend response
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1000);
+                } else {
+                    // PHP Backend Error (e.g. Wrong password or username not found)
+                    errorBox.innerHTML = data.message;
+                    errorBox.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                loginBtn.innerHTML = "Login";
+                loginBtn.disabled = false;
+                errorBox.innerHTML = "Server connection error. Please try again later.";
+                errorBox.style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html>
