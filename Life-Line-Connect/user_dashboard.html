@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeLine Connect - Donor Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet Map CSS for Frontend Mapping -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        /* CSS Styling - Same Theme */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f4f7fe; color: #2b3674; display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar { width: 260px; background: #ffffff; padding: 24px 20px; border-right: 1px solid #e0e5f2; display: flex; flex-direction: column; }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; color: #d32f2f; }
+        .brand-icon { width: 40px; height: 40px; background: #ffebee; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .brand h2 { font-size: 18px; font-weight: 700; line-height: 1.2; }
+        
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .nav-item { padding: 12px 16px; border-radius: 8px; color: #a3aed1; text-decoration: none; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 12px; transition: 0.2s; cursor: pointer; }
+        .nav-item:hover, .nav-item.active { background: #d32f2f; color: white; }
+
+        /* Main Content */
+        .main-content { flex: 1; padding: 32px; overflow-y: auto; height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .header h1 { font-size: 24px; color: #2b3674; font-weight: 700; }
+        .user-profile { display: flex; align-items: center; gap: 16px; }
+        .avatar { width: 40px; height: 40px; background: #d32f2f; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+        .logout-btn { padding: 8px 16px; background: #ffebee; color: #d32f2f; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; transition: 0.2s; }
+        .logout-btn:hover { background: #ffcdd2; }
+
+        /* Page Sections (Tabs) */
+        .page-section { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .page-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Dashboard Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+        .stat-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: center; }
+        .stat-card h4 { color: #a3aed1; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+        .stat-card h2 { color: #2b3674; font-size: 24px; font-weight: 700; }
+        .status-eligible { color: #2e7d32; }
+        .status-not-eligible { color: #d32f2f; }
+
+        /* Cards Layout */
+        .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px; }
+        .card { background: white; padding: 24px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .card-header h3 { font-size: 16px; color: #2b3674; font-weight: 700; }
+
+        /* Table Styling */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #e0e5f2; font-size: 14px; }
+        th { color: #a3aed1; font-weight: 600; font-size: 12px; text-transform: uppercase; }
+        td { color: #2b3674; font-weight: 500; }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+        .badge-success { background: #e8f5e9; color: #2e7d32; }
+
+        /* Emergency Box */
+        .emergency-box { background: #fff5f5; border: 1px solid #ffcdd2; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+        .emergency-box p { font-size: 13px; color: #b71c1c; line-height: 1.5; font-weight: 600; }
+
+        /* Map Container */
+        #map { height: 400px; width: 100%; border-radius: 12px; z-index: 1; border: 1px solid #e0e5f2; }
+        .btn-location { background: #e3f2fd; color: #1565c0; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; }
+        .btn-location:hover { background: #bbdefb; }
+
+        /* Modal Styles */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); }
+        .modal-content { background-color: #fff; margin: 8% auto; padding: 32px; border-radius: 16px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .close-btn { position: absolute; right: 24px; top: 20px; font-size: 24px; cursor: pointer; color: #a3aed1; font-weight: bold; }
+        .close-btn:hover { color: #d32f2f; }
+        
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #2b3674; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #e0e5f2; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus { border-color: #1565c0; }
+        .error-message { color: #d32f2f; font-size: 12px; margin-top: 6px; display: none; font-weight: 500; }
+        .input-error { border-color: #d32f2f !important; background: #fff5f5; }
+        .submit-btn { width: 100%; padding: 14px; background: #d32f2f; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; margin-top: 10px; transition: 0.2s; }
+        .submit-btn:hover { background: #b71c1c; }
+
+        /* Feed Styles */
+        .feed-container { display: flex; flex-direction: column; gap: 16px; }
+        .feed-post { padding: 16px; border: 1px solid #e0e5f2; border-radius: 12px; background: #fafbfc; position: relative; }
+        .post-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .post-author { font-size: 14px; font-weight: 700; color: #2b3674; }
+        .post-date { font-size: 12px; color: #a3aed1; }
+        .post-body { font-size: 14px; color: #4a5568; line-height: 1.5; margin-bottom: 12px; }
+        .badge-emergency { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        .badge-review { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .badge-qa { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+        .rating { color: #f5b041; font-size: 14px; margin-top: 8px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+            </div>
+            <h2>LifeLine<br>Connect</h2>
+        </div>
+        
+        <div class="nav-menu">
+            <a onclick="switchTab('dashboard', this)" class="nav-item active">My Dashboard</a>
+            <a onclick="switchTab('history', this)" class="nav-item">Donation History</a>
+            <a onclick="switchTab('camps', this)" class="nav-item">Find Nearby Camps</a>
+            <a onclick="switchTab('community', this)" class="nav-item">Community Feed</a>
+            <a onclick="switchTab('profile', this)" class="nav-item">Profile Settings</a>
+            
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- GLOBAL HEADER (Always visible) -->
+        <div class="header">
+            <div>
+                <h1 id="pageTitle">My Dashboard</h1>
+                <p id="welcomeTitle" style="font-size: 14px; color: #a3aed1; margin-top: 4px;">Loading your information...</p>
+            </div>
+            <div class="user-profile">
+                <div class="avatar" id="navAvatar">--</div>
+                <span style="font-size: 14px; font-weight: 600;" id="navName">Loading...</span>
+                <a href="php/logout.php" class="logout-btn">Logout</a>
+            </div>
+        </div>
+
+        <!-- ==============================
+             SECTION 1: DASHBOARD
+        =============================== -->
+        <div id="dashboard" class="page-section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>My Blood Group</h4>
+                    <h2 style="color: #d32f2f;" id="statBg">--</h2>
+                </div>
+                <div class="stat-card">
+                    <h4>Eligibility Status</h4>
+                    <h2 class="status-eligible" id="statElig">--</h2>
+                </div>
+                <div class="stat-card">
+                    <h4>Total Donations</h4>
+                    <h2 id="statDonations">-- Pints</h2>
+                </div>
+                <div class="stat-card">
+                    <h4>Next Eligible Date</h4>
+                    <h2 style="font-size: 18px; margin-top: 4px;" id="statNextDate">--</h2>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Emergency Alerts & Quick Actions</h3>
+                </div>
+                <div class="emergency-box">
+                    <p>🚨 URGENT: Karapitiya Hospital requires O+ blood immediately. Please visit the nearest center.</p>
+                </div>
+                <div class="emergency-box" style="background: #f4f7fe; border-color: #e0e5f2;">
+                    <p style="color: #2b3674;">📅 Upcoming Camp: Register for the nearest camp. <br><br> <a href="#" id="openRegBtn" style="color: #d32f2f; font-weight: bold; text-decoration: none;">➜ Register now</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================
+             SECTION 2: DONATION HISTORY
+        =============================== -->
+        <div id="history" class="page-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3>My Donation History</h3>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Camp / Venue</th>
+                                <th>Units</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr><td colspan="4" style="text-align: center;">Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==============================
+             SECTION 3: FIND NEARBY CAMPS
+        =============================== -->
+        <div id="camps" class="page-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Map of Upcoming Donation Camps</h3>
+                    <button class="btn-location" onclick="findNearbyCamps()">📍 Use My Location</button>
+                </div>
+                <div id="map"></div>
+            </div>
+        </div>
+
+        <!-- ==============================
+             SECTION 4: COMMUNITY FEED
+        =============================== -->
+        <div id="community" class="page-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Live Community & Emergency Feed</h3>
+                </div>
+                <div class="feed-container" id="feedContainer">
+                    <p style="text-align:center;">Loading Feed...</p>
+                </div>
+            </div>
+        </div>
+
+      <label>Full Name</label>
+                <!-- ==============================
+   <!-- ==============================
+     SECTION 5: PROFILE SETTINGS
+=============================== -->
+<div id="profile" class="page-section">
+    <div class="card" style="max-width: 600px;">
+        <div class="card-header">
+            <h3>Update Profile Details</h3>
+        </div>
+        <form id="updateProfileForm">
+            <!-- Username (වෙනස් කළ නොහැක) -->
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="profUsername" disabled style="background:#f4f7fe;">
+            </div>
+
+            <!-- Full Name (වෙනස් කළ නොහැක) -->
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="profName" disabled style="background:#f4f7fe;">
+            </div>
+
+            <!-- NIC Number (වෙනස් කළ නොහැක) -->
+            <div class="form-group">
+                <label>NIC Number</label>
+                <input type="text" id="profNIC" disabled style="background:#f4f7fe;">
+            </div>
+
+            <!-- Gender (වෙනස් කළ නොහැක) -->
+            <div class="form-group">
+                <label>Gender</label>
+                <input type="text" id="profGender" disabled style="background:#f4f7fe;">
+            </div>
+
+            <!-- Blood Group (වෙනස් කළ නොහැක) -->
+            <div class="form-group">
+                <label>Blood Group</label>
+                <input type="text" id="profBg" disabled style="background:#f4f7fe; color: #d32f2f; font-weight: bold;">
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="form-group">
+                <label>Date of Birth</label>
+                <input type="date" id="profDOB">
+            </div>
+
+            <!-- Weight -->
+            <div class="form-group">
+                <label>Weight (kg)</label>
+                <input type="number" id="profWeight" placeholder="Enter your weight in kg">
+            </div>
+
+            <!-- Mobile Number -->
+            <div class="form-group">
+                <label>Mobile Number</label>
+                <input type="text" id="profMobile" placeholder="Enter new mobile number">
+            </div>
+
+            <!-- Address (අලුතින් එකතු කළ) -->
+            <div class="form-group">
+                <label>Address</label>
+                <input type="text" id="profAddress" placeholder="Enter your address">
+            </div>
+
+            <!-- District (අලුතින් එකතු කළ) -->
+            <div class="form-group">
+                <label>District</label>
+                <input type="text" id="profDistrict" placeholder="Enter your district">
+            </div>
+
+            <!-- Last Donated Date -->
+            <div class="form-group">
+                <label>Last Donated Date (Optional)</label>
+                <input type="date" id="profLastDonated">
+            </div>
+
+            <!-- New Password -->
+            <div class="form-group">
+                <label>New Password (Leave blank to keep current)</label>
+                <input type="password" id="profPassword" placeholder="Enter new password">
+            </div>
+
+            <button type="submit" class="submit-btn">Save Changes</button>
+        </form>
+        
+        <div id="profileMsg" style="margin-top: 15px; font-weight: bold; text-align: center; font-size: 14px;"></div>
+    </div>
+</div>
+        <!-- පණිවිඩය පෙන්වන තැන -->
+        <div id="profileMsg" style="margin-top: 15px; font-weight: bold; text-align: center; font-size: 14px;"></div>
+    </div>
+</div>
+    <!-- ========== Registration Modal (Global) ========== -->
+    <div id="regModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2 style="color: #2b3674; font-size: 20px; margin-bottom: 24px;">Camp Registration</h2>
+            
+            <form id="donationForm" onsubmit="return validateForm(event)">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="donorName" name="name" placeholder="Enter your full name">
+                    <div id="nameError" class="error-message">Name must be at least 3 characters long.</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Age</label>
+                    <input type="number" id="donorAge" name="age" placeholder="Enter your age">
+                    <div id="ageError" class="error-message">Age must be between 18 and 60 to donate blood.</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Mobile Number</label>
+                    <input type="text" id="donorMobile" name="mobile" placeholder="e.g. 0712345678">
+                    <div id="mobileError" class="error-message">Please enter a valid 10-digit mobile number.</div>
+                </div>
+
+                <button type="submit" id="submitRegBtn" class="submit-btn">Confirm Registration</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Frontend JavaScript -->
+    <script>
+        // ------------------ 1. TAB SWITCHING LOGIC ------------------
+        function switchTab(tabId, element) {
+            // Update Active Class in Sidebar
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            // Hide all sections, show the target one
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            // Update Page Title
+            const titles = {
+                'dashboard': 'My Dashboard',
+                'history': 'Donation History',
+                'camps': 'Nearby Donation Camps',
+                'community': 'Community Feed',
+                'profile': 'Profile Settings'
+            };
+            document.getElementById('pageTitle').innerText = titles[tabId];
+
+            // Fix for Leaflet Map rendering issue when inside a hidden div
+            if (tabId === 'camps') {
+                setTimeout(() => { map.invalidateSize(); }, 100);
+            }
+
+            // Load Community Feed if that tab is opened
+            if (tabId === 'community') {
+                loadFeed();
+            }
+        }
+
+
+        // ------------------ 2. MAP INITIALIZATION ------------------
+        const map = L.map('map').setView([7.8731, 80.7718], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+        const markerGroup = L.layerGroup().addTo(map);
+        let campLocations = [];
+
+
+        // ------------------ 3. FETCH DASHBOARD DATA (from API) ------------------
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('php/user_dashboard_api.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'error') {
+                        alert(data.message);
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    // A. Populate User Info
+                    const fName = data.user.full_name;
+                    document.getElementById('welcomeTitle').innerText = "Welcome back, " + fName.split(' ')[0] + "!";
+                    document.getElementById('navName').innerText = fName;
+                    
+                    // Profile Settings Data
+                    document.getElementById('profName').value = fName;
+                    document.getElementById('profBg').value = data.user.blood_group;
+                    
+                    let initials = fName.match(/\b\w/g) || [];
+                    document.getElementById('navAvatar').innerText = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
+
+                    // B. Populate Stats
+                    document.getElementById('statBg').innerText = data.user.blood_group;
+                    document.getElementById('statDonations').innerText = (data.stats.total_units < 10 ? '0' : '') + data.stats.total_units + " Pints";
+                    document.getElementById('statNextDate').innerText = data.stats.next_date;
+
+                    const eligEl = document.getElementById('statElig');
+                    if(data.stats.is_eligible) {
+                        eligEl.innerText = "✅ Eligible";
+                        eligEl.className = "status-eligible";
+                    } else {
+                        eligEl.innerText = "⏳ Not Eligible";
+                        eligEl.className = "status-not-eligible";
+                    }
+
+                    // C. Populate History Table
+                    const tbody = document.getElementById('historyTableBody');
+                    tbody.innerHTML = '';
+                    if (data.history.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No donation history found.</td></tr>';
+                    } else {
+                        data.history.forEach(row => {
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td>${row.donation_date}</td>
+                                    <td>${row.camp_name}</td>
+                                    <td>${row.units} Pint</td>
+                                    <td><span class="badge badge-success">${row.status}</span></td>
+                                </tr>
+                            `;
+                        });
+                    }
+
+                    // D. Populate Map
+                    campLocations = data.camps;
+                    campLocations.forEach(camp => {
+                        L.marker([camp.lat, camp.lng]).addTo(markerGroup)
+                            .bindPopup(`<b>${camp.name}</b><br>Venue: ${camp.venue}<br>Date: ${camp.date}`);
+                    });
+                })
+                .catch(error => console.error('Error fetching dashboard data:', error));
+        });
+
+
+        // ------------------ 4. COMMUNITY FEED LOGIC ------------------
+        function getStars(num) { return '⭐'.repeat(num); }
+
+        function loadFeed() {
+            fetch('php/community_api.php?action=fetch')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('feedContainer');
+                    container.innerHTML = ''; 
+
+                    if (data.status === 'success' && data.data.length > 0) {
+                        data.data.forEach(post => {
+                            let badgeClass = ''; let badgeText = ''; let ratingHtml = '';
+
+                            if (post.post_type === 'Emergency') { badgeClass = 'badge-emergency'; badgeText = 'Emergency Appeal'; } 
+                            else if (post.post_type === 'Review') { badgeClass = 'badge-review'; badgeText = 'Camp Review'; ratingHtml = `<div class="rating">Rating: ${getStars(post.rating)}</div>`; } 
+                            else if (post.post_type === 'QA') { badgeClass = 'badge-qa'; badgeText = 'Community Q&A'; }
+
+                            container.innerHTML += `
+                                <div class="feed-post">
+                                    <div class="post-header">
+                                        <span class="post-author">${post.author_name}</span>
+                                        <span class="badge ${badgeClass}">${badgeText}</span>
+                                    </div>
+                                    <div class="post-date">${post.formatted_date}</div>
+                                    <div class="post-body">${post.message_body}</div>
+                                    ${ratingHtml}
+                                </div>
+                            `;
+                        });
+                    } else {
+                        container.innerHTML = '<p style="text-align:center; color:#757575;">No posts available yet.</p>';
+                    }
+                });
+        }
+
+
+        // ------------------ 5. NEARBY CAMPS LOGIC ------------------
+        function findNearbyCamps() {
+            if (navigator.geolocation) {
+                alert("Locating you and finding nearby camps...");
+                navigator.geolocation.getCurrentPosition(position => {
+                    const userLatLng = L.latLng(position.coords.latitude, position.coords.longitude);
+                    markerGroup.clearLayers();
+
+                    const userIcon = L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                        iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
+                    });
+
+                    L.marker(userLatLng, {icon: userIcon}).addTo(markerGroup).bindPopup("<b>📍 You are here!</b>").openPopup();
+
+                    let foundNearby = false;
+                    campLocations.forEach(camp => {
+                        const campLatLng = L.latLng(camp.lat, camp.lng);
+                        const distanceInKm = (userLatLng.distanceTo(campLatLng) / 1000).toFixed(1);
+
+                        if (distanceInKm <= 50) { 
+                            foundNearby = true;
+                            L.marker(campLatLng).addTo(markerGroup)
+                                .bindPopup(`<b>${camp.name}</b><br>Venue: ${camp.venue}<br><strong style="color:#d32f2f;">Distance: ${distanceInKm} km away</strong>`);
+                        }
+                    });
+
+                    map.setView(userLatLng, 10);
+                    if (!foundNearby) alert("No blood donation camps found within 50km of your location.");
+                }, error => alert("Location access denied or failed."));
+            }
+        }
+
+
+        // ------------------ 6. MODAL & REGISTRATION LOGIC ------------------
+        const modal = document.getElementById('regModal');
+        const openBtn = document.getElementById('openRegBtn');
+
+        openBtn.onclick = function(e) {
+            e.preventDefault();
+            modal.style.display = "block";
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+            document.getElementById('donationForm').reset();
+            resetErrors();
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) closeModal();
+        }
+
+        function resetErrors() {
+            document.querySelectorAll('.form-group input').forEach(input => input.classList.remove('input-error'));
+            document.querySelectorAll('.error-message').forEach(error => error.style.display = 'none');
+        }
+
+        function validateForm(e) {
+            e.preventDefault(); 
+            resetErrors();
+            let isValid = true;
+
+            const nameInput = document.getElementById('donorName');
+            const ageInput = document.getElementById('donorAge');
+            const mobileInput = document.getElementById('donorMobile');
+
+            if (nameInput.value.trim().length < 3) {
+                document.getElementById('nameError').style.display = "block";
+                nameInput.classList.add('input-error');
+                isValid = false;
+            }
+
+            const ageValue = parseInt(ageInput.value);
+            if (isNaN(ageValue) || ageValue < 18 || ageValue > 60) {
+                document.getElementById('ageError').style.display = "block";
+                ageInput.classList.add('input-error');
+                isValid = false;
+            }
+
+            if (!/^[0-9]{10}$/.test(mobileInput.value.trim())) {
+                document.getElementById('mobileError').style.display = "block";
+                mobileInput.classList.add('input-error');
+                isValid = false;
+            }
+
+            if (isValid) {
+                const submitBtn = document.getElementById('submitRegBtn');
+                submitBtn.innerText = "Registering...";
+                submitBtn.disabled = true;
+
+                const formData = new FormData(document.getElementById('donationForm'));
+
+                fetch('php/register_camp_api.php', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    submitBtn.innerText = "Confirm Registration";
+                    submitBtn.disabled = false;
+                    if (data.status === 'success') {
+                        alert(data.message);
+                        closeModal();
+                    } else alert("Error: " + data.message);
+                })
+                .catch(error => {
+                    submitBtn.innerText = "Confirm Registration";
+                    submitBtn.disabled = false;
+                    alert("Server error occurred.");
+                });
+            }
+        }
+ // Profile දත්ත ලෝඩ් කරන Function එක
+function loadProfileData() {
+    fetch('php/get_profile_api.php')
+    .then(response => response.json())
+    .then(data => {
+        if(data.status === 'success') {
+            const user = data.data;
+            document.getElementById('profUsername').value = user.USERNAME || '';
+            document.getElementById('profName').value = user.FULL_NAME || '';
+            document.getElementById('profNIC').value = user.NIC || '';
+            document.getElementById('profGender').value = user.GENDER || '';
+            document.getElementById('profBg').value = user.BLOOD_GROUP || '';
+            document.getElementById('profDOB').value = user.DOB || '';
+            document.getElementById('profWeight').value = user.WEIGHT || '';
+            document.getElementById('profMobile').value = user.MOBILE || '';
+            document.getElementById('profAddress').value = user.ADDRESS || '';
+            document.getElementById('profDistrict').value = user.DISTRICT || '';
+            document.getElementById('profLastDonated').value = user.LAST_DONATED_DATE || '';
+        }
+    })
+    .catch(error => console.error('Error loading profile:', error));
+}
+
+// පිටුව ලෝඩ් වෙද්දිම Profile දත්ත ගන්නවා
+document.addEventListener("DOMContentLoaded", function() {
+    loadProfileData(); 
+});
+
+// Profile Update Form එක Submit කිරීම
+document.getElementById('updateProfileForm').addEventListener('submit', function(e) {
+    e.preventDefault(); 
+    
+    const formData = new FormData();
+    formData.append('dob', document.getElementById('profDOB').value);
+    formData.append('weight', document.getElementById('profWeight').value);
+    formData.append('mobile', document.getElementById('profMobile').value);
+    formData.append('address', document.getElementById('profAddress').value);
+    formData.append('district', document.getElementById('profDistrict').value);
+    formData.append('last_donated', document.getElementById('profLastDonated').value);
+    formData.append('password', document.getElementById('profPassword').value);
+
+    const msgDiv = document.getElementById('profileMsg');
+    msgDiv.style.color = 'orange';
+    msgDiv.innerText = 'Updating...';
+
+    fetch('php/update_profile_api.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.status === 'success') {
+            msgDiv.style.color = 'green';
+            msgDiv.innerText = '✅ ' + data.message;
+            document.getElementById('profPassword').value = ''; 
+        } else {
+            msgDiv.style.color = 'red';
+            msgDiv.innerText = '❌ ' + data.message;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        msgDiv.style.color = 'red';
+        msgDiv.innerText = '❌ System Error! Check console.';
+    });
+});
+    </script>
+</body>
+</html>

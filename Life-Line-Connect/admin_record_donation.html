@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Donation | LifeLine Admin</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .admin-panel {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 450px;
+            border-top: 5px solid #a82e2e;
+        }
+        h2 { color: #a82e2e; text-align: center; margin-bottom: 5px; }
+        p.subtitle { color: #666; text-align: center; font-size: 14px; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; }
+        label { font-weight: bold; color: #444; display: block; margin-bottom: 8px; font-size: 14px; }
+        input { 
+            width: 100%; padding: 12px; border: 1px solid #ccc; 
+            border-radius: 6px; box-sizing: border-box; font-size: 15px;
+        }
+        input:focus { border-color: #a82e2e; outline: none; }
+        button { 
+            width: 100%; padding: 14px; background: #a82e2e; color: white; 
+            border: none; border-radius: 6px; font-weight: bold; font-size: 16px; 
+            cursor: pointer; transition: 0.3s;
+        }
+        button:hover { background: #8a2525; }
+        .back-link { display: block; text-align: center; margin-top: 20px; color: #a82e2e; text-decoration: none; font-weight: bold; font-size: 14px; }
+        #msgBox { text-align: center; margin-top: 15px; font-weight: bold; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-panel">
+        <h2>Record Donation</h2>
+        <p class="subtitle">Update user history and blood inventory manually.</p>
+        
+        <form id="recordForm">
+            <div class="form-group">
+                <label>Donor ID</label>
+                <input type="number" id="donor_id" placeholder="Enter Donor ID (e.g. 1)" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Camp Name or Venue</label>
+                <input type="text" id="camp_name" placeholder="e.g. Karapitiya Hospital" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Blood Units (Pints)</label>
+                <input type="number" id="units" value="1" min="1" required>
+            </div>
+            
+            <button type="submit">Add Record ✓</button>
+        </form>
+
+        <div id="msgBox"></div>
+        
+        <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+    </div>
+
+    <script>
+        document.getElementById('recordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('donor_id', document.getElementById('donor_id').value);
+            formData.append('camp_name', document.getElementById('camp_name').value);
+            formData.append('units', document.getElementById('units').value);
+
+            const msgBox = document.getElementById('msgBox');
+            msgBox.style.color = 'orange';
+            msgBox.innerText = 'Processing...';
+
+            fetch('php/admin_add_donation_api.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    msgBox.style.color = 'green';
+                    msgBox.innerText = '✅ ' + data.message;
+                    document.getElementById('recordForm').reset();
+                } else {
+                    msgBox.style.color = 'red';
+                    msgBox.innerText = '❌ ' + data.message;
+                }
+            })
+            .catch(error => {
+                msgBox.style.color = 'red';
+                msgBox.innerText = '❌ System Error! Please check console.';
+            });
+        });
+    </script>
+</body>
+</html>

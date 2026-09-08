@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank - Reports</title>
+    <!-- Plus Jakarta Sans Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* Oyage CSS tika */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f4f7fe; color: #2b3674; display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: #ffffff; padding: 24px 20px; border-right: 1px solid #e0e5f2; display: flex; flex-direction: column; }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; color: #d32f2f; }
+        .brand-icon { width: 40px; height: 40px; background: #ffebee; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .brand h2 { font-size: 18px; font-weight: 700; line-height: 1.2; }
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .nav-item { padding: 12px 16px; border-radius: 8px; color: #a3aed1; text-decoration: none; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
+        .nav-item:hover, .nav-item.active { background: #d32f2f; color: white; }
+        
+        .main-content { flex: 1; padding: 32px; overflow-y: auto; height: 100vh; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .header h1 { font-size: 24px; color: #2b3674; font-weight: 700; }
+        .user-profile { display: flex; align-items: center; gap: 16px; }
+        .logout-btn { padding: 8px 16px; background: #ffebee; color: #d32f2f; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 13px; transition: 0.2s; }
+        
+        .card { background: white; padding: 24px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 24px; }
+        .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .card-header h3 { font-size: 16px; color: #2b3674; font-weight: 700; }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #4a5568; }
+        .input-group input, .input-group select { width: 100%; padding: 10px 14px; border: 1.5px solid #e0e5f2; border-radius: 8px; font-size: 14px; outline: none; }
+        .input-group input:focus { border-color: #d32f2f; }
+        .input-group input[readonly] { background-color: #f8fafc; color: #64748b; cursor: not-allowed; }
+        
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-red { background: #d32f2f; color: white; }
+        .btn-red:hover { background: #b71c1c; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #e0e5f2; font-size: 14px; }
+        th { color: #a3aed1; font-weight: 600; font-size: 12px; text-transform: uppercase; }
+        td { color: #2b3674; font-weight: 500; }
+
+        /* Report page specific additions to match the theme */
+        .report-types { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+        .report-btn { padding: 12px 16px; border: 1px solid #e0e5f2; border-radius: 8px; background: white; color: #4a5568; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .report-btn:hover, .report-btn.active { background: #d32f2f; color: white; border-color: #d32f2f; }
+        .table-responsive { overflow-x: auto; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #a3aed1; }
+        .empty-state i { font-size: 30px; margin-bottom: 12px; color: #e0e5f2; }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="fas fa-heartbeat"></i>
+            </div>
+            <h2>BloodBank<br>Admin</h2>
+        </div>
+        
+        <div class="nav-menu">
+            <a href="dashboard.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="donors.html" class="nav-item"><i class="fas fa-users"></i> Donors & Eligibility</a>
+            <a href="camps.html" class="nav-item"><i class="fas fa-campground"></i> Camps & Staff</a>
+            <a href="hospitals.html" class="nav-item"><i class="fas fa-hospital"></i> Hospital Requests</a>
+            <a href="community.html" class="nav-item"><i class="fas fa-comments"></i> Community Q&A</a>
+            <a href="inventory.html" class="nav-item"><i class="fas fa-box"></i> Inventory</a>
+            <a href="admin_record_donation.html" class="nav-item"><i class="fas fa-tint"></i> Add New Donation</a>
+            <a href="reports.html" class="nav-item active"><i class="fas fa-chart-bar"></i> Reports</a>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>System Reports</h1>
+            <div class="user-profile">
+                <span style="font-weight: 600; font-size: 14px;">Admin User</span>
+                <a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+
+        <!-- REPORT SELECTOR CARD -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Select Report Category</h3>
+            </div>
+            <div class="report-types">
+                <button class="report-btn" onclick="loadReport('units_by_camp', 'Total Units by Camp', this)">
+                    <i class="fas fa-campground"></i> Units By Camp
+                </button>
+                <button class="report-btn" onclick="loadReport('expiring_units', 'Expiring Units Alert (7 Days)', this)">
+                    <i class="fas fa-exclamation-triangle"></i> Expiring Units
+                </button>
+                <button class="report-btn" onclick="loadReport('low_stock', 'Low Stock Alerts', this)">
+                    <i class="fas fa-arrow-down"></i> Low Stock Alerts
+                </button>
+                <button class="report-btn" onclick="loadReport('donor_eligibility', 'Donor Eligibility Summary', this)">
+                    <i class="fas fa-user-check"></i> Donor Eligibility
+                </button>
+                <button class="report-btn" onclick="loadReport('monthly_performance', 'Monthly Performance', this)">
+                    <i class="fas fa-chart-line"></i> Monthly Performance
+                </button>
+            </div>
+        </div>
+
+        <!-- DYNAMIC FILTER CARD -->
+        <div class="card" id="filterSection" style="display: none;">
+            <div class="form-grid" style="align-items: end;">
+                <div class="input-group">
+                    <label id="filterLabel">Filter Value:</label>
+                    <input type="text" id="filterInput" placeholder="Enter value...">
+                </div>
+                <div>
+                    <button class="btn btn-red" onclick="fetchData()">Generate Report</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- REPORT DATA TABLE CARD -->
+        <div class="card">
+            <div class="card-header">
+                <h3 id="reportTitle"><i class="fas fa-table"></i> Report Data</h3>
+                <button class="btn btn-red" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table id="reportTable">
+                    <thead id="tableHead">
+                        <!-- Headers will be generated here -->
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="100%">
+                                <div class="empty-state">
+                                    <i class="fas fa-hand-pointer"></i>
+                                    <p>Please select a report type from the top menu to view data.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for API calls -->
+    <script>
+        let currentAction = '';
+
+        function loadReport(action, title, btnElement) {
+            currentAction = action;
+            document.getElementById('reportTitle').innerHTML = `<i class="fas fa-table"></i> ${title}`;
+            
+            // Manage Active State for Buttons
+            document.querySelectorAll('.report-btn').forEach(btn => btn.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+            
+            // Show/Hide filters based on report type
+            const filterSection = document.getElementById('filterSection');
+            const filterLabel = document.getElementById('filterLabel');
+            const filterInput = document.getElementById('filterInput');
+
+            if (action === 'donor_eligibility') {
+                filterSection.style.display = 'block';
+                filterLabel.innerText = 'Donor ID:';
+                filterInput.placeholder = 'e.g., 1001';
+                filterInput.type = 'number';
+                resetTable();
+            } else if (action === 'monthly_performance') {
+                filterSection.style.display = 'block';
+                filterLabel.innerText = 'Month (1-12):';
+                filterInput.placeholder = 'e.g., 8';
+                filterInput.type = 'number';
+                resetTable();
+            } else {
+                filterSection.style.display = 'none';
+                fetchData(); // Directly fetch if no filters needed
+            }
+        }
+
+        function resetTable() {
+            document.getElementById('tableHead').innerHTML = '';
+            document.getElementById('tableBody').innerHTML = `
+                <tr><td colspan="100%">
+                    <div class="empty-state">
+                        <i class="fas fa-filter"></i>
+                        <p>Please enter a filter value above and click "Generate Report".</p>
+                    </div>
+                </td></tr>`;
+        }
+
+        function fetchData() {
+            document.getElementById('tableBody').innerHTML = `
+                <tr><td colspan="100%">
+                    <div class="empty-state" style="color: #d32f2f;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading Data...</p>
+                    </div>
+                </td></tr>`;
+            
+            let url = `php/reports_api.php?action=${currentAction}`;
+            
+            if (document.getElementById('filterSection').style.display === 'block') {
+                const filterValue = document.getElementById('filterInput').value;
+                if(!filterValue) {
+                    alert("Please enter a filter value!");
+                    resetTable();
+                    return;
+                }
+                url += `&filter_val=${filterValue}`;
+            }
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('tableBody').innerHTML = `<tr><td colspan="100%" style="text-align:center; color: #d32f2f; padding: 20px;">Error: ${data.error}</td></tr>`;
+                        return;
+                    }
+                    if (data.length === 0) {
+                        document.getElementById('tableHead').innerHTML = '';
+                        document.getElementById('tableBody').innerHTML = `
+                            <tr><td colspan="100%">
+                                <div class="empty-state" style="color: #2e7d32;">
+                                    <i class="fas fa-check-circle"></i>
+                                    <p>No records found. Everything looks good!</p>
+                                </div>
+                            </td></tr>`;
+                        return;
+                    }
+
+                    // Generate Headers
+                    let headers = Object.keys(data[0]);
+                    let headHTML = '<tr>';
+                    headers.forEach(header => {
+                        headHTML += `<th>${header.replace(/_/g, ' ').toUpperCase()}</th>`;
+                    });
+                    headHTML += '</tr>';
+                    document.getElementById('tableHead').innerHTML = headHTML;
+
+                    // Generate Rows
+                    let bodyHTML = '';
+                    data.forEach(row => {
+                        bodyHTML += '<tr>';
+                        headers.forEach(header => {
+                            bodyHTML += `<td>${row[header] !== null ? row[header] : '-'}</td>`;
+                        });
+                        bodyHTML += '</tr>';
+                    });
+                    document.getElementById('tableBody').innerHTML = bodyHTML;
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    document.getElementById('tableBody').innerHTML = `<tr><td colspan="100%" style="text-align:center; color: #d32f2f; padding: 20px;">Failed to connect to the server. Please check the backend API.</td></tr>`;
+                });
+        }
+    </script>
+</body>
+</html>
